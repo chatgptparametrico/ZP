@@ -55,11 +55,6 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
       {/* Inject animation keyframes */}
       <style>{cubeAnimationStyle}</style>
 
-      {/* Debug: show message if component renders */}
-      <div style={{ position: 'fixed', bottom: 10, left: 10, zIndex: 999999, color: 'red', background: 'yellow', padding: '10px' }}>
-        DEBUG: MiniCubeNav rendered - boxes: {boxes.length}, isInsideBox: {String(isInsideBox)}
-      </div>
-
       {/* Container - ALWAYS visible at top center, ABOVE everything */}
       <div
         style={{
