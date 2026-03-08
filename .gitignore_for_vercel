@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build
+.next/
+out/
+build/
+dist/
+
+# Testing
+coverage/
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env
+.env*.local
+.env
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.idea/
+.vscode/
+
+# Skills and examples
+skills/
+examples/
+
+# Logs
+*.log
+
+# Database
+db/
+prisma/
+
+# Upload folder
+upload/
+
+# Download folder
+download/
+
+# Scripts
+.zscripts/
+mini-services/
+Caddyfile
