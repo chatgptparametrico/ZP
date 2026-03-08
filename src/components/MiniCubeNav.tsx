@@ -11,6 +11,15 @@ interface MiniCubeNavProps {
   isInsideBox?: boolean;
 }
 
+// Animal images for each cube
+const animalImages = [
+  'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=100',
+  'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=100',
+  'https://images.pexels.com/photos/1687427/pexels-photo-1687427.jpeg?auto=compress&cs=tinysrgb&w=100',
+  'https://images.pexels.com/photos/1918290/pexels-photo-1918290.jpeg?auto=compress&cs=tinysrgb&w=100',
+  'https://images.pexels.com/photos/1390361/pexels-photo-1390361.jpeg?auto=compress&cs=tinysrgb&w=100',
+];
+
 // Inline styles for the cube animation
 const cubeAnimationStyle = `
   @keyframes spin3d {
@@ -45,6 +54,11 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
     <>
       {/* Inject animation keyframes */}
       <style>{cubeAnimationStyle}</style>
+
+      {/* Debug: show message if component renders */}
+      <div style={{ position: 'fixed', bottom: 10, left: 10, zIndex: 999999, color: 'red', background: 'yellow', padding: '10px' }}>
+        DEBUG: MiniCubeNav rendered - boxes: {boxes.length}, isInsideBox: {String(isInsideBox)}
+      </div>
 
       {/* Container - ALWAYS visible at top center, ABOVE everything */}
       <div
@@ -123,46 +137,36 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                       animationDelay: `${index * 0.15}s`,
                     }}
                   >
-                    {/* Front face */}
+                    {/* Front face - Animal Image */}
                     <div
                       style={{
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 'bold',
-                        fontSize: '18px',
                         borderRadius: '8px',
                         transform: `translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactive,
-                        color: isActive ? colors.textActive : colors.text,
+                        backgroundImage: `url(${animalImages[index % animalImages.length]})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
                         boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)',
                       }}
-                    >
-                      {index + 1}
-                    </div>
+                    />
 
-                    {/* Back face */}
+                    {/* Back face - Animal Image */}
                     <div
                       style={{
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 'bold',
-                        fontSize: '18px',
                         borderRadius: '8px',
                         transform: `rotateY(180deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveDark,
-                        color: isActive ? colors.textActive : 'transparent',
+                        backgroundImage: `url(${animalImages[index % animalImages.length]})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
                       }}
-                    >
-                      {index + 1}
-                    </div>
+                    />
 
                     {/* Right face */}
                     <div
