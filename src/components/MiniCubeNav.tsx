@@ -24,37 +24,36 @@ const cubeAnimationStyle = `
 `;
 
 export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accentColor, onNavigate, isInsideBox = false }: MiniCubeNavProps) {
-  // Make cubes larger and more visible - 48px instead of 32px
-  const cubeSize = 48;
+  // Much larger cubes for better visibility - 64px
+  const cubeSize = 64;
   const halfSize = cubeSize / 2;
 
   const colors = useMemo(() => ({
-    active: accentColor,
-    inactive: isDarkMode ? '#4a5568' : '#cbd5e0',
-    inactiveDark: isDarkMode ? '#2d3748' : '#e2e8f0',
-    inactiveTop: isDarkMode ? '#718096' : '#f7fafc',
-    inactiveBottom: isDarkMode ? '#1a202c' : '#a0aec0',
-    text: isDarkMode ? '#a0aec0' : '#4a5563',
-    textActive: '#ffffff',
-    // More opaque background for better visibility
-    bg: isDarkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)',
-    border: isDarkMode ? 'rgba(0,255,255,0.8)' : 'rgba(34,197,94,0.8)',
-  }), [isDarkMode, accentColor]);
+    active: accentColor || '#00ffff',
+    inactive: '#718096',
+    inactiveDark: '#4a5568',
+    inactiveTop: '#a0aec0',
+    inactiveBottom: '#2d3748',
+    text: '#ffffff',
+    textActive: '#000000',
+    // Very opaque dark background for maximum contrast
+    bg: 'rgba(0,0,0,0.98)',
+    border: 'rgba(0,255,255,1)',
+  }), [accentColor]);
 
   return (
     <>
       {/* Inject animation keyframes */}
       <style>{cubeAnimationStyle}</style>
 
-      {/* Container - ALWAYS visible at top center */}
+      {/* Container - ALWAYS visible at top center, ABOVE everything */}
       <div
         style={{
           position: 'fixed',
-          // When inside box, position at very top; when outside, position below logo area
-          top: isInsideBox ? '12px' : '160px',
+          top: isInsideBox ? '20px' : '180px',
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 99999,
+          zIndex: 2147483647, // Maximum z-index
           display: 'block',
           pointerEvents: 'auto',
         }}
@@ -63,15 +62,15 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
-            padding: '10px 20px',
-            borderRadius: '20px',
+            gap: '20px',
+            padding: '16px 28px',
+            borderRadius: '24px',
             backgroundColor: colors.bg,
-            border: `3px solid ${colors.border}`,
+            border: `4px solid ${colors.border}`,
             boxShadow: isInsideBox
-              ? '0 8px 40px rgba(0,255,255,0.3), 0 0 20px rgba(0,255,255,0.2)'
-              : '0 4px 30px rgba(0,0,0,0.4)',
-            backdropFilter: 'blur(15px)',
+              ? '0 0 60px rgba(0,255,255,0.6), 0 12px 40px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,255,255,0.1)'
+              : '0 8px 40px rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(20px)',
           }}
         >
           {boxes.map((box, index) => {
@@ -87,17 +86,21 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                   width: `${cubeSize}px`,
                   height: `${cubeSize}px`,
                   padding: '0',
-                  border: isActive ? `3px solid ${accentColor}` : '3px solid transparent',
-                  borderRadius: '8px',
-                  background: 'transparent',
+                  border: isActive ? `4px solid ${accentColor || '#00ffff'}` : '4px solid rgba(0,255,255,0.3)',
+                  borderRadius: '12px',
+                  background: isActive ? 'rgba(0,255,255,0.2)' : 'transparent',
                   cursor: 'pointer',
-                  transition: 'transform 0.2s, border-color 0.2s',
+                  transition: 'transform 0.2s, border-color 0.2s, background 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.15)';
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.borderColor = 'rgba(0,255,255,1)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
+                  if (!isActive) {
+                    e.currentTarget.style.borderColor = 'rgba(0,255,255,0.3)';
+                  }
                 }}
               >
                 {/* 3D Cube container */}
@@ -130,12 +133,12 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontWeight: 'bold',
-                        fontSize: '14px',
-                        borderRadius: '6px',
+                        fontSize: '18px',
+                        borderRadius: '8px',
                         transform: `translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactive,
                         color: isActive ? colors.textActive : colors.text,
-                        boxShadow: 'inset 0 0 8px rgba(0,0,0,0.4)',
+                        boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)',
                       }}
                     >
                       {index + 1}
@@ -151,8 +154,8 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontWeight: 'bold',
-                        fontSize: '14px',
-                        borderRadius: '6px',
+                        fontSize: '18px',
+                        borderRadius: '8px',
                         transform: `rotateY(180deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveDark,
                         color: isActive ? colors.textActive : 'transparent',
@@ -167,7 +170,7 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         transform: `rotateY(90deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveDark,
                       }}
@@ -179,7 +182,7 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         transform: `rotateY(-90deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactive,
                       }}
@@ -191,7 +194,7 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         transform: `rotateX(90deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveTop,
                       }}
@@ -203,7 +206,7 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         transform: `rotateX(-90deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveBottom,
                       }}
