@@ -24,7 +24,8 @@ const cubeAnimationStyle = `
 `;
 
 export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accentColor, onNavigate, isInsideBox = false }: MiniCubeNavProps) {
-  const cubeSize = 32;
+  // Make cubes larger and more visible - 48px instead of 32px
+  const cubeSize = 48;
   const halfSize = cubeSize / 2;
 
   const colors = useMemo(() => ({
@@ -35,8 +36,9 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
     inactiveBottom: isDarkMode ? '#1a202c' : '#a0aec0',
     text: isDarkMode ? '#a0aec0' : '#4a5563',
     textActive: '#ffffff',
-    bg: isDarkMode ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)',
-    border: isDarkMode ? 'rgba(0,255,255,0.5)' : 'rgba(34,197,94,0.5)',
+    // More opaque background for better visibility
+    bg: isDarkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)',
+    border: isDarkMode ? 'rgba(0,255,255,0.8)' : 'rgba(34,197,94,0.8)',
   }), [isDarkMode, accentColor]);
 
   return (
@@ -44,11 +46,12 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
       {/* Inject animation keyframes */}
       <style>{cubeAnimationStyle}</style>
 
-      {/* Container - position varies based on view mode */}
+      {/* Container - ALWAYS visible at top center */}
       <div
         style={{
           position: 'fixed',
-          top: isInsideBox ? '16px' : '140px',
+          // When inside box, position at very top; when outside, position below logo area
+          top: isInsideBox ? '12px' : '160px',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 99999,
@@ -60,18 +63,20 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
-            padding: '12px 16px',
-            borderRadius: '16px',
+            gap: '16px',
+            padding: '10px 20px',
+            borderRadius: '20px',
             backgroundColor: colors.bg,
-            border: `2px solid ${colors.border}`,
-            boxShadow: '0 4px 30px rgba(0,0,0,0.4)',
-            backdropFilter: 'blur(10px)',
+            border: `3px solid ${colors.border}`,
+            boxShadow: isInsideBox
+              ? '0 8px 40px rgba(0,255,255,0.3), 0 0 20px rgba(0,255,255,0.2)'
+              : '0 4px 30px rgba(0,0,0,0.4)',
+            backdropFilter: 'blur(15px)',
           }}
         >
           {boxes.map((box, index) => {
             const isActive = index === currentBoxIndex;
-            
+
             return (
               <button
                 key={box.id}
@@ -82,13 +87,14 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                   width: `${cubeSize}px`,
                   height: `${cubeSize}px`,
                   padding: '0',
-                  border: 'none',
+                  border: isActive ? `3px solid ${accentColor}` : '3px solid transparent',
+                  borderRadius: '8px',
                   background: 'transparent',
                   cursor: 'pointer',
-                  transition: 'transform 0.2s',
+                  transition: 'transform 0.2s, border-color 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.2)';
+                  e.currentTarget.style.transform = 'scale(1.15)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
@@ -99,7 +105,7 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                   style={{
                     width: '100%',
                     height: '100%',
-                    perspective: '100px',
+                    perspective: '120px',
                     perspectiveOrigin: '50% 50%',
                   }}
                 >
@@ -124,17 +130,17 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontWeight: 'bold',
-                        fontSize: '12px',
-                        borderRadius: '4px',
+                        fontSize: '14px',
+                        borderRadius: '6px',
                         transform: `translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactive,
                         color: isActive ? colors.textActive : colors.text,
-                        boxShadow: 'inset 0 0 6px rgba(0,0,0,0.3)',
+                        boxShadow: 'inset 0 0 8px rgba(0,0,0,0.4)',
                       }}
                     >
                       {index + 1}
                     </div>
-                    
+
                     {/* Back face */}
                     <div
                       style={{
@@ -145,8 +151,8 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontWeight: 'bold',
-                        fontSize: '12px',
-                        borderRadius: '4px',
+                        fontSize: '14px',
+                        borderRadius: '6px',
                         transform: `rotateY(180deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveDark,
                         color: isActive ? colors.textActive : 'transparent',
@@ -154,50 +160,50 @@ export default function MiniCubeNav({ boxes, currentBoxIndex, isDarkMode, accent
                     >
                       {index + 1}
                     </div>
-                    
+
                     {/* Right face */}
                     <div
                       style={{
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         transform: `rotateY(90deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveDark,
                       }}
                     />
-                    
+
                     {/* Left face */}
                     <div
                       style={{
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         transform: `rotateY(-90deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactive,
                       }}
                     />
-                    
+
                     {/* Top face */}
                     <div
                       style={{
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         transform: `rotateX(90deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveTop,
                       }}
                     />
-                    
+
                     {/* Bottom face */}
                     <div
                       style={{
                         position: 'absolute',
                         width: '100%',
                         height: '100%',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         transform: `rotateX(-90deg) translateZ(${halfSize}px)`,
                         backgroundColor: isActive ? colors.active : colors.inactiveBottom,
                       }}

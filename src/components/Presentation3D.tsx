@@ -922,8 +922,8 @@ export default function Presentation3D() {
         </div>
       )}
 
-      {/* Mini rotating cubes navigation - ALWAYS visible */}
-      {showAllUI && (
+      {/* Mini rotating cubes navigation - ALWAYS visible, even when UI is hidden */}
+      {(
         <MiniCubeNav
           boxes={boxes}
           currentBoxIndex={currentBoxIndex}
