@@ -922,12 +922,17 @@ export default function Presentation3D() {
       )}
 
       {/* Mini rotating boxes navigation - Always show when inside box */}
-      {isInsideBox && boxes[currentBoxIndex] && showAllUI && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl backdrop-blur-md" 
+      {isInsideBox && boxes[currentBoxIndex] && (
+        <div 
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] pointer-events-auto"
+          style={{ display: 'block' }}
+        >
+          <div 
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl"
             style={{ 
-              backgroundColor: isDarkMode ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.85)',
-              border: `1px solid ${isDarkMode ? 'rgba(0,255,255,0.25)' : 'rgba(34,197,94,0.25)'}`
+              backgroundColor: isDarkMode ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.95)',
+              border: `2px solid ${isDarkMode ? 'rgba(0,255,255,0.4)' : 'rgba(34,197,94,0.4)'}`,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
             }}>
             {boxes.map((box, index) => (
               <button
@@ -939,63 +944,123 @@ export default function Presentation3D() {
                     enterBox(index);
                   }, 350);
                 }}
-                className="relative group cursor-pointer hover:scale-110 transition-transform"
+                className="relative group cursor-pointer hover:scale-125 transition-transform duration-200"
                 title={box.name}
+                style={{ padding: '4px' }}
               >
-                <div className="w-8 h-8 md:w-10 md:h-10 mini-cube-container">
-                  <div className="w-full h-full mini-cube" style={{ animationDelay: `${index * 0.25}s` }}>
-                    {/* Front */}
-                    <div className="mini-cube-face flex items-center justify-center text-xs font-bold"
+                {/* Simple rotating cube using CSS */}
+                <div 
+                  className="mini-cube-wrapper"
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    perspective: '80px',
+                    display: 'inline-block'
+                  }}
+                >
+                  <div 
+                    className="mini-cube-inner"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      position: 'relative',
+                      transformStyle: 'preserve-3d',
+                      animation: `rotateCube 3s linear infinite`,
+                      animationDelay: `${index * 0.2}s`
+                    }}
+                  >
+                    {/* Front face */}
+                    <div 
                       style={{
-                        transform: 'translateZ(16px)',
-                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#374151' : '#e5e7eb'),
-                        color: index === currentBoxIndex ? '#fff' : (isDarkMode ? '#9ca3af' : '#4b5563'),
-                      }}>
-                      {index + 1}
-                    </div>
-                    {/* Back */}
-                    <div className="mini-cube-face"
-                      style={{
-                        transform: 'rotateY(180deg) translateZ(16px)',
-                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#1f2937' : '#d1d5db'),
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        borderRadius: '4px',
+                        transform: 'translateZ(18px)',
+                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#4a5568' : '#cbd5e0'),
+                        color: index === currentBoxIndex ? '#fff' : (isDarkMode ? '#a0aec0' : '#4a5563'),
+                        boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)'
                       }}
                     >
-                      <span style={{ color: index === currentBoxIndex ? '#fff' : 'transparent' }}>{index + 1}</span>
+                      {index + 1}
                     </div>
-                    {/* Right */}
-                    <div className="mini-cube-face"
+                    {/* Back face */}
+                    <div 
                       style={{
-                        transform: 'rotateY(90deg) translateZ(16px)',
-                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#1f2937' : '#d1d5db'),
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        borderRadius: '4px',
+                        transform: 'rotateY(180deg) translateZ(18px)',
+                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#2d3748' : '#e2e8f0'),
+                        color: '#fff'
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    {/* Right face */}
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '4px',
+                        transform: 'rotateY(90deg) translateZ(18px)',
+                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#2d3748' : '#e2e8f0')
                       }}
                     />
-                    {/* Left */}
-                    <div className="mini-cube-face"
+                    {/* Left face */}
+                    <div 
                       style={{
-                        transform: 'rotateY(-90deg) translateZ(16px)',
-                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#374151' : '#e5e7eb'),
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '4px',
+                        transform: 'rotateY(-90deg) translateZ(18px)',
+                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#4a5568' : '#cbd5e0')
                       }}
                     />
-                    {/* Top */}
-                    <div className="mini-cube-face"
+                    {/* Top face */}
+                    <div 
                       style={{
-                        transform: 'rotateX(90deg) translateZ(16px)',
-                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#4b5563' : '#f3f4f6'),
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '4px',
+                        transform: 'rotateX(90deg) translateZ(18px)',
+                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#718096' : '#f7fafc')
                       }}
                     />
-                    {/* Bottom */}
-                    <div className="mini-cube-face"
+                    {/* Bottom face */}
+                    <div 
                       style={{
-                        transform: 'rotateX(-90deg) translateZ(16px)',
-                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#1f2937' : '#d1d5db'),
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '4px',
+                        transform: 'rotateX(-90deg) translateZ(18px)',
+                        backgroundColor: index === currentBoxIndex ? currentTheme.accent : (isDarkMode ? '#1a202c' : '#a0aec0')
                       }}
                     />
                   </div>
                 </div>
-                {/* Glow on hover */}
+                {/* Glow effect on hover */}
                 <div 
                   className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ boxShadow: `0 0 15px ${currentTheme.accent}` }}
+                  style={{ 
+                    boxShadow: `0 0 20px ${currentTheme.accent}, 0 0 40px ${currentTheme.accent}`,
+                    pointerEvents: 'none'
+                  }}
                 />
               </button>
             ))}
