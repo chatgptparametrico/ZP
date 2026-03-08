@@ -134,11 +134,15 @@
 .mini-cube-container {
   perspective: 100px;
   perspective-origin: 50% 50%;
+  display: block !important;
 }
 
 .mini-cube {
   transform-style: preserve-3d;
   animation: rotateCube 4s linear infinite;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .mini-cube-face {
@@ -151,4 +155,5 @@
   font-weight: bold;
   border-radius: 2px;
   backface-visibility: visible;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
 }

@@ -921,8 +921,8 @@ export default function Presentation3D() {
         </div>
       )}
 
-      {/* Mini rotating boxes navigation - Show on all walls (slides 0-3) */}
-      {isInsideBox && boxes[currentBoxIndex] && currentSlideIndex < 4 && showAllUI && (
+      {/* Mini rotating boxes navigation - Always show when inside box */}
+      {isInsideBox && boxes[currentBoxIndex] && showAllUI && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
           <div className="flex items-center gap-3 px-4 py-2 rounded-2xl backdrop-blur-md" 
             style={{ 
