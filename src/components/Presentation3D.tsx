@@ -314,6 +314,59 @@ export default function Presentation3D() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     group.add(ambientLight);
 
+    // Add small navigation cubes inside the box
+    const miniCubeSize = 0.6;
+    const miniCubeGap = 1.2;
+    const totalWidth = boxes.length * miniCubeGap;
+    const startX = -totalWidth / 2 + miniCubeGap / 2;
+    const cubeColor = parseInt(currentTheme.accent.replace('#', '0x'));
+
+    boxes.forEach((box, index) => {
+      const miniCubeGroup = new THREE.Group();
+
+      // Create mini cube geometry
+      const geometry = new THREE.BoxGeometry(miniCubeSize, miniCubeSize, miniCubeSize);
+
+      // Different colors for active vs inactive
+      const isCurrentBox = index === boxes.findIndex(b => b.id === boxData.id);
+      const color = isCurrentBox ? cubeColor : 0x4a5568;
+
+      const materials = [
+        new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.4 }),
+        new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.4 }),
+        new THREE.MeshStandardMaterial({ color: isCurrentBox ? cubeColor : 0x2d3748, metalness: 0.3, roughness: 0.4 }),
+        new THREE.MeshStandardMaterial({ color: isCurrentBox ? cubeColor : 0x1a202c, metalness: 0.3, roughness: 0.4 }),
+        new THREE.MeshStandardMaterial({ color: isCurrentBox ? cubeColor : 0x718096, metalness: 0.3, roughness: 0.4 }),
+        new THREE.MeshStandardMaterial({ color: isCurrentBox ? cubeColor : 0x4a5568, metalness: 0.3, roughness: 0.4 }),
+      ];
+
+      const miniCube = new THREE.Mesh(geometry, materials);
+      miniCube.userData = {
+        isMiniNavCube: true,
+        targetBoxIndex: index,
+        boxId: box.id,
+        rotationSpeed: 0.01 + Math.random() * 0.01,
+        floatOffset: Math.random() * Math.PI * 2
+      };
+      miniCubeGroup.add(miniCube);
+
+      // Add glowing edge
+      const edgesGeometry = new THREE.EdgesGeometry(geometry);
+      const edgesMaterial = new THREE.LineBasicMaterial({ color: cubeColor, transparent: true, opacity: 0.8 });
+      const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+      miniCubeGroup.add(edges);
+
+      // Position the mini cube
+      miniCubeGroup.position.set(
+        startX + index * miniCubeGap,
+        wallHeight / 2,
+        0
+      );
+
+      // Add to group
+      group.add(miniCubeGroup);
+    });
+
     return group;
   }, [isDarkMode, currentTheme.accent]);
 
@@ -524,6 +577,23 @@ export default function Presentation3D() {
       }
 
       if (isInsideBox) {
+        // Animate mini navigation cubes inside the box
+        if (insideBoxGroupRef.current) {
+          const time = Date.now() * 0.001;
+          insideBoxGroupRef.current.traverse((child) => {
+            if (child.userData && child.userData.isMiniNavCube) {
+              // Rotate the cube
+              child.rotation.y += child.userData.rotationSpeed || 0.01;
+              child.rotation.x += (child.userData.rotationSpeed || 0.01) * 0.5;
+
+              // Float up and down
+              if (child.parent && child.userData.floatOffset !== undefined) {
+                child.parent.position.y = child.parent.position.y + Math.sin(time + child.userData.floatOffset) * 0.002;
+              }
+            }
+          });
+        }
+
         // Handle slide-based camera orientation (0-3 = walls, 4 = floor, 5 = ceiling)
         if (currentSlideIndex <= 3) {
           // Walls - horizontal rotation
@@ -580,6 +650,43 @@ export default function Presentation3D() {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    // Raycaster for clicking on mini cubes
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    const handleClick = (e: MouseEvent) => {
+      if (!mouseEnabled || !cameraRef.current || !insideBoxGroupRef.current) return;
+
+      // Calculate mouse position in normalized device coordinates
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, cameraRef.current);
+
+      // Get all mini cube meshes from insideBoxGroup
+      const miniCubes: THREE.Mesh[] = [];
+      insideBoxGroupRef.current.traverse((child) => {
+        if (child.userData && child.userData.isMiniNavCube && child instanceof THREE.Mesh) {
+          miniCubes.push(child);
+        }
+      });
+
+      const intersects = raycaster.intersectObjects(miniCubes);
+
+      if (intersects.length > 0) {
+        const clickedObject = intersects[0].object;
+        const targetIndex = clickedObject.userData.targetBoxIndex;
+        if (targetIndex !== undefined && targetIndex !== currentBoxIndex) {
+          // Navigate to the clicked cube's box
+          exitBox();
+          setTimeout(() => {
+            setCurrentBox(targetIndex);
+            focusOnBox(targetIndex);
+          }, 350);
+        }
+      }
+    };
 
     const handleMouseDown = (e: MouseEvent) => {
       if (!mouseEnabled) return;
@@ -640,14 +747,16 @@ export default function Presentation3D() {
     container.addEventListener('mouseup', handleMouseUp);
     container.addEventListener('mousemove', handleMouseMove);
     container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener('click', handleClick);
 
     return () => {
       container.removeEventListener('mousedown', handleMouseDown);
       container.removeEventListener('mouseup', handleMouseUp);
       container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('click', handleClick);
     };
-  }, [mouseEnabled, isInsideBox]);
+  }, [mouseEnabled, isInsideBox, currentBoxIndex, setCurrentBox, focusOnBox, exitBox]);
 
   // Keyboard controls
   useEffect(() => {
@@ -1066,23 +1175,6 @@ export default function Presentation3D() {
           ))}
         </div>
       </div>
-      )}
-
-      {/* Mini Cube Navigation - Inside box at top */}
-      {isInsideBox && boxes[currentBoxIndex] && showAllUI && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-          <MiniCubeNav
-            boxes={boxes}
-            currentBoxIndex={currentBoxIndex}
-            isDarkMode={isDarkMode}
-            accentColor={currentTheme.accent}
-            isInsideBox={true}
-            onNavigate={(index) => {
-              setCurrentBox(index);
-              focusOnBox(index);
-            }}
-          />
-        </div>
       )}
 
       {/* Inside box controls panel - HORIZONTAL LAYOUT */}
