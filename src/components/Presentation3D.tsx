@@ -314,9 +314,9 @@ export default function Presentation3D() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     group.add(ambientLight);
 
-    // Add small navigation cubes inside the box
-    const miniCubeSize = 0.6;
-    const miniCubeGap = 1.2;
+    // Add small navigation cubes inside the box - More visible
+    const miniCubeSize = 1.2; // Larger cubes
+    const miniCubeGap = 2.0;
     const totalWidth = boxes.length * miniCubeGap;
     const startX = -totalWidth / 2 + miniCubeGap / 2;
     const cubeColor = parseInt(currentTheme.accent.replace('#', '0x'));
@@ -324,20 +324,21 @@ export default function Presentation3D() {
     boxes.forEach((box, index) => {
       const miniCubeGroup = new THREE.Group();
 
-      // Create mini cube geometry
+      // Create mini cube geometry - larger for visibility
       const geometry = new THREE.BoxGeometry(miniCubeSize, miniCubeSize, miniCubeSize);
 
-      // Different colors for active vs inactive
-      const isCurrentBox = index === boxes.findIndex(b => b.id === boxData.id);
-      const color = isCurrentBox ? cubeColor : 0x4a5568;
+      // All cubes get bright color, just slightly different for current
+      const isCurrentBox = index === currentBoxIndex;
+      const color = isCurrentBox ? cubeColor : 0x00ffaa; // Bright cyan-green for all
 
+      // Make all cubes bright and emissive
       const materials = [
-        new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.4 }),
-        new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.4 }),
-        new THREE.MeshStandardMaterial({ color: isCurrentBox ? cubeColor : 0x2d3748, metalness: 0.3, roughness: 0.4 }),
-        new THREE.MeshStandardMaterial({ color: isCurrentBox ? cubeColor : 0x1a202c, metalness: 0.3, roughness: 0.4 }),
-        new THREE.MeshStandardMaterial({ color: isCurrentBox ? cubeColor : 0x718096, metalness: 0.3, roughness: 0.4 }),
-        new THREE.MeshStandardMaterial({ color: isCurrentBox ? cubeColor : 0x4a5568, metalness: 0.3, roughness: 0.4 }),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, metalness: 0.5, roughness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, metalness: 0.5, roughness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, metalness: 0.5, roughness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, metalness: 0.5, roughness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, metalness: 0.5, roughness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, metalness: 0.5, roughness: 0.2 }),
       ];
 
       const miniCube = new THREE.Mesh(geometry, materials);
@@ -345,22 +346,22 @@ export default function Presentation3D() {
         isMiniNavCube: true,
         targetBoxIndex: index,
         boxId: box.id,
-        rotationSpeed: 0.01 + Math.random() * 0.01,
+        rotationSpeed: 0.015 + Math.random() * 0.01,
         floatOffset: Math.random() * Math.PI * 2
       };
       miniCubeGroup.add(miniCube);
 
-      // Add glowing edge
+      // Add glowing edge - bright cyan
       const edgesGeometry = new THREE.EdgesGeometry(geometry);
-      const edgesMaterial = new THREE.LineBasicMaterial({ color: cubeColor, transparent: true, opacity: 0.8 });
+      const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2 });
       const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
       miniCubeGroup.add(edges);
 
-      // Position the mini cube
+      // Position the mini cube - floating at eye level but closer to camera
       miniCubeGroup.position.set(
         startX + index * miniCubeGap,
-        wallHeight / 2,
-        0
+        wallHeight / 2 + 1, // Slightly higher
+        -3 // Closer to the viewer
       );
 
       // Add to group
@@ -368,7 +369,7 @@ export default function Presentation3D() {
     });
 
     return group;
-  }, [isDarkMode, currentTheme.accent]);
+  }, [isDarkMode, currentTheme.accent, currentBoxIndex, boxes]);
 
   const focusOnBox = useCallback((index: number) => {
     const box = boxesRef.current[index];
@@ -594,19 +595,14 @@ export default function Presentation3D() {
           });
         }
 
-        // Handle slide-based camera orientation (0-3 = walls, 4 = floor, 5 = ceiling)
+        // Handle slide-based camera orientation (0-3 = walls) - Only force angle, not pitch
         if (currentSlideIndex <= 3) {
-          // Walls - horizontal rotation
+          // Walls - horizontal rotation only, allow free vertical look
           targetCameraAngleRef.current = currentSlideIndex * (Math.PI / 2);
-          targetCameraPitchRef.current = 0;
-        } else if (currentSlideIndex === 4) {
-          // Floor - look down
-          targetCameraPitchRef.current = -Math.PI / 2 + 0.3;
-        } else if (currentSlideIndex === 5) {
-          // Ceiling - look up
-          targetCameraPitchRef.current = Math.PI / 2 - 0.3;
+          // Don't force pitch - let user look freely at floor/ceiling/walls
         }
-        
+        // Removed forced floor/ceiling orientation - user has full camera freedom
+
         // Smooth angle rotation
         const angleDiff = targetCameraAngleRef.current - cameraAngleRef.current;
         const shortestAngleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
@@ -709,13 +705,14 @@ export default function Presentation3D() {
         // Rotate camera angle
         cameraAngleRef.current -= deltaX * 0.005;
         targetCameraAngleRef.current = cameraAngleRef.current;
-        // Vertical look (pitch)
+        // Vertical look (pitch) - More freedom to look at floor and ceiling
         targetCameraPitchRef.current += deltaY * 0.003;
-        targetCameraPitchRef.current = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, targetCameraPitchRef.current));
+        // Allow full 360 degree vertical rotation for maximum freedom
+        targetCameraPitchRef.current = Math.max(-Math.PI + 0.1, Math.min(Math.PI - 0.1, targetCameraPitchRef.current));
         cameraPitchRef.current = targetCameraPitchRef.current;
-        // Height
+        // Height - More freedom
         targetCameraPositionRef.current.y += deltaY * 0.02;
-        targetCameraPositionRef.current.y = Math.max(0.5, Math.min(5, targetCameraPositionRef.current.y));
+        targetCameraPositionRef.current.y = Math.max(0.1, Math.min(8, targetCameraPositionRef.current.y));
       } else {
         targetCameraPositionRef.current.x -= deltaX * 0.05;
         targetCameraPositionRef.current.y += deltaY * 0.05;

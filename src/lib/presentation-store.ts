@@ -43,14 +43,17 @@ interface PresentationData {
   version: string;
 }
 
-const defaultSlides: string[] = [
-  '/images/slides/slide1.png',
-  '/images/slides/slide2.png',
-  '/images/slides/slide3.png',
-  '/images/slides/slide4.png',
-  '/images/slides/slide5.png',
-  '/images/slides/slide6.png',
+// Animal images for default slides
+const animalImages: string[] = [
+  'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=800',
+  'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=800',
+  'https://images.pexels.com/photos/1687427/pexels-photo-1687427.jpeg?auto=compress&cs=tinysrgb&w=800',
+  'https://images.pexels.com/photos/1918290/pexels-photo-1918290.jpeg?auto=compress&cs=tinysrgb&w=800',
+  'https://images.pexels.com/photos/1390361/pexels-photo-1390361.jpeg?auto=compress&cs=tinysrgb&w=800',
+  'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=800',
 ];
+
+const defaultSlides: string[] = animalImages;
 
 const createDefaultBox = (index: number): BoxData => ({
   id: `box-${Date.now()}-${index}`,
