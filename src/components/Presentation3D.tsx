@@ -794,25 +794,20 @@ export default function Presentation3D() {
     <div className={`relative w-full h-screen overflow-hidden select-none ${currentTheme.bg}`}>
       <div ref={containerRef} className="absolute inset-0" />
 
-      {/* Mini Cube Navigation - Always visible at top */}
-      <MiniCubeNav
-        boxes={boxes}
-        currentBoxIndex={currentBoxIndex}
-        isDarkMode={isDarkMode}
-        accentColor={currentTheme.accent}
-        isInsideBox={isInsideBox}
-        onNavigate={(index) => {
-          setCurrentBox(index);
-          if (isInsideBox) {
-            exitBox();
-            setTimeout(() => {
-              focusOnBox(index);
-            }, 350);
-          } else {
+      {/* Mini Cube Navigation - Bird view (outside box) at top of screen */}
+      {!isInsideBox && (
+        <MiniCubeNav
+          boxes={boxes}
+          currentBoxIndex={currentBoxIndex}
+          isDarkMode={isDarkMode}
+          accentColor={currentTheme.accent}
+          isInsideBox={false}
+          onNavigate={(index) => {
+            setCurrentBox(index);
             focusOnBox(index);
-          }
-        }}
-      />
+          }}
+        />
+      )}
 
       {/* Zirkel Logo & Video - Bird view only */}
       {!isInsideBox && showAllUI && (
@@ -940,31 +935,6 @@ export default function Presentation3D() {
             🖱️ {mouseEnabled ? 'ON' : 'OFF'}
           </button>
         </div>
-      )}
-
-      {/* Mini rotating cubes navigation - ALWAYS visible, even when UI is hidden */}
-      {(
-        <MiniCubeNav
-          boxes={boxes}
-          currentBoxIndex={currentBoxIndex}
-          isDarkMode={isDarkMode}
-          accentColor={currentTheme.accent}
-          isInsideBox={isInsideBox}
-          onNavigate={(index) => {
-            if (isInsideBox) {
-              // If inside a box, exit first then enter new box
-              exitBox();
-              setTimeout(() => {
-                setCurrentBox(index);
-                enterBox(index);
-              }, 350);
-            } else {
-              // If in bird view, just focus on the box
-              setCurrentBox(index);
-              focusOnBox(index);
-            }
-          }}
-        />
       )}
 
       {/* Navigation arrows when inside box */}
@@ -1096,6 +1066,23 @@ export default function Presentation3D() {
           ))}
         </div>
       </div>
+      )}
+
+      {/* Mini Cube Navigation - Inside box at top */}
+      {isInsideBox && boxes[currentBoxIndex] && showAllUI && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+          <MiniCubeNav
+            boxes={boxes}
+            currentBoxIndex={currentBoxIndex}
+            isDarkMode={isDarkMode}
+            accentColor={currentTheme.accent}
+            isInsideBox={true}
+            onNavigate={(index) => {
+              setCurrentBox(index);
+              focusOnBox(index);
+            }}
+          />
+        </div>
       )}
 
       {/* Inside box controls panel - HORIZONTAL LAYOUT */}
