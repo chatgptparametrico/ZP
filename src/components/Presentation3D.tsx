@@ -758,33 +758,48 @@ export default function Presentation3D() {
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Si se está escribiendo (título, subtítulo, nombre de sala), los atajos no
+      // deben dispararse: sin esto, tipear "w", "z" o un número movía la cámara.
+      const destino = e.target as HTMLElement | null;
+      if (destino && (
+        destino.tagName === 'INPUT' ||
+        destino.tagName === 'TEXTAREA' ||
+        destino.isContentEditable
+      )) return;
+
       switch (e.key) {
+        // Pasar de diapositiva: ↑/← anterior, ↓/→ siguiente (convención de
+        // presentador: abajo avanza). Adentro del cubo cambia de cara; afuera,
+        // de sala. La altura de la cámara pasó a W/S.
+        case 'ArrowUp':
         case 'ArrowLeft':
           if (isInsideBox) {
-            const newSlideIndex = (currentSlideIndex - 1 + 6) % 6;
-            setCurrentSlide(newSlideIndex);
+            setCurrentSlide((currentSlideIndex - 1 + 6) % 6);
           } else {
-            const newBoxIndex = (currentBoxIndex - 1 + boxes.length) % boxes.length;
-            setCurrentBox(newBoxIndex);
-            focusOnBox(newBoxIndex);
+            const anteriorBox = (currentBoxIndex - 1 + boxes.length) % boxes.length;
+            setCurrentBox(anteriorBox);
+            focusOnBox(anteriorBox);
           }
           break;
+        case 'ArrowDown':
         case 'ArrowRight':
           if (isInsideBox) {
-            const newSlideIndex = (currentSlideIndex + 1) % 6;
-            setCurrentSlide(newSlideIndex);
+            setCurrentSlide((currentSlideIndex + 1) % 6);
           } else {
-            const newBoxIndex = (currentBoxIndex + 1) % boxes.length;
-            setCurrentBox(newBoxIndex);
-            focusOnBox(newBoxIndex);
+            const siguienteBox = (currentBoxIndex + 1) % boxes.length;
+            setCurrentBox(siguienteBox);
+            focusOnBox(siguienteBox);
           }
           break;
-        case 'ArrowUp':
+        // Altura de la cámara adentro del cubo (antes estaba en ↑↓).
+        case 'w':
+        case 'W':
           if (isInsideBox) {
             targetCameraPositionRef.current.y = Math.min(5, targetCameraPositionRef.current.y + 0.5);
           }
           break;
-        case 'ArrowDown':
+        case 's':
+        case 'S':
           if (isInsideBox) {
             targetCameraPositionRef.current.y = Math.max(0.5, targetCameraPositionRef.current.y - 0.5);
           }
@@ -962,7 +977,9 @@ export default function Presentation3D() {
                 <ul className={`space-y-1 text-xs ${currentTheme.textMuted}`}>
                   <li className="flex items-center gap-2">🖱️ Arrastrar: Rotar/Mover</li>
                   <li className="flex items-center gap-2">🔄 Rueda: Zoom</li>
+                  <li className="flex items-center gap-2">⬆️⬇️ Cambiar cara</li>
                   <li className="flex items-center gap-2">⬅️➡️ Cambiar cara</li>
+                  <li className="flex items-center gap-2">W / S: Altura de cámara</li>
                   <li className="flex items-center gap-2">⏎ Enter: Entrar</li>
                   <li className="flex items-center gap-2">⎋ Esc: Salir</li>
                   <li className="flex items-center gap-2">1-6 Ir a cara</li>
@@ -1001,6 +1018,16 @@ export default function Presentation3D() {
                 >
                   🖱️ Mouse: {mouseEnabled ? 'ON' : 'OFF'}
                 </button>
+
+                {/* Vuelta al sitio principal: esta app se abre desde zirkeldep.com
+                    y sin esto el único camino de regreso era el botón del navegador. */}
+                <a
+                  href="https://zirkeldep.com"
+                  title="Volver al sitio principal de Zirkel"
+                  className={`${currentTheme.panelBg} backdrop-blur-md ${currentTheme.text} px-4 py-2 rounded-xl text-sm hover:opacity-80 transition border ${currentTheme.border} shadow-lg text-center no-underline`}
+                >
+                  ↩ Volver a Zirkel
+                </a>
               </>
             )}
           </div>

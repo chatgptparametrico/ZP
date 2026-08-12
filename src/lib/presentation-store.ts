@@ -71,12 +71,11 @@ const createDefaultBox = (index: number): BoxData => ({
 });
 
 export const usePresentationStore = create<PresentationState>((set, get) => ({
+  // Por defecto arranca con 3 salas; con "Nueva Sala" se agregan las que hagan falta.
   boxes: [
     createDefaultBox(0),
     createDefaultBox(1),
     createDefaultBox(2),
-    createDefaultBox(3),
-    createDefaultBox(4),
   ],
   currentBoxIndex: 0,
   isInsideBox: false,
