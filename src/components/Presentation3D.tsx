@@ -5,7 +5,34 @@ import * as THREE from 'three';
 import { usePresentationStore } from '@/lib/presentation-store';
 import MiniCubeNav from './MiniCubeNav';
 
+// A donde vuelve el boton "Volver a Zirkel": a la copia del sitio desde la que
+// se abrio la app. Entrando desde /gitnew120/ tiene que devolver ahi y no a la
+// raiz. Orden: parametro ?back= (lo agrega el sitio al abrir la app) → referrer
+// → raiz. Se acepta SOLO zirkeldep.com: sin ese filtro el boton seria un
+// redirector abierto (cualquiera podria mandar ?back=sitio-malicioso).
+function resolverUrlDeVuelta(): string {
+  const PORDEFECTO = 'https://zirkeldep.com';
+  const admitida = (valor: string | null): string | null => {
+    if (!valor) return null;
+    try {
+      const url = new URL(valor);
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+      const host = url.hostname.toLowerCase();
+      const propio = /(^|\.)zirkeldep\.com$/.test(host) || host === 'zirkeldep-zmc.vercel.app';
+      return propio ? url.toString() : null;
+    } catch {
+      return null;
+    }
+  };
+  const back = new URLSearchParams(window.location.search).get('back');
+  return admitida(back) || admitida(document.referrer) || PORDEFECTO;
+}
+
 export default function Presentation3D() {
+  // Se resuelve despues del montaje: en el prerender de Next no hay window y
+  // calcularlo en el render daria un HTML distinto al del cliente (hidratacion).
+  const [urlVolver, setUrlVolver] = useState('https://zirkeldep.com');
+  useEffect(() => { setUrlVolver(resolverUrlDeVuelta()); }, []);
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -1022,8 +1049,8 @@ export default function Presentation3D() {
                 {/* Vuelta al sitio principal: esta app se abre desde zirkeldep.com
                     y sin esto el único camino de regreso era el botón del navegador. */}
                 <a
-                  href="https://zirkeldep.com"
-                  title="Volver al sitio principal de Zirkel"
+                  href={urlVolver}
+                  title="Volver al sitio de Zirkel"
                   className={`${currentTheme.panelBg} backdrop-blur-md ${currentTheme.text} px-4 py-2 rounded-xl text-sm hover:opacity-80 transition border ${currentTheme.border} shadow-lg text-center no-underline`}
                 >
                   ↩ Volver a Zirkel
